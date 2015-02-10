@@ -48,6 +48,9 @@
     <ClInclude Include="ApSelDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ScanDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="testDialog.cpp">
@@ -74,6 +77,9 @@
     <ClCompile Include="ApSelDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ScanDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="testDialog.rc">
@@ -87,6 +93,21 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\testDialog.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\bitmap1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ap_full1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ap_full2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ap_bitma.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

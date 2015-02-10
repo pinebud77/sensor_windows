@@ -9,6 +9,8 @@
 class CLoginDialog;
 class CUartDialog;
 class CApSelDialog;
+class CScanDialog;
+
 class CSerial;
 
 // CtestDialogDlg 대화 상자
@@ -43,4 +45,6 @@ public:
 	CLoginDialog *m_pLoginDlg;
 	CUartDialog * m_pUartDlg;
 	CApSelDialog *m_pApSelDlg;
+	CScanDialog * m_pScanDlg;
+	void ToScanWindow();
 };

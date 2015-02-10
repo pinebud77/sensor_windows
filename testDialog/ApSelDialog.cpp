@@ -134,7 +134,6 @@ void CApSelDialog::OnBnClickedSetapBtn()
 
 		pSerial->SendData("a", 1);
 
-		buffer[0] = '\0';
 		readBytes = pSerial->ReadBytesOrWait(buffer, strlen(SSID_MESSAGE), 1000);
 		if (strlen(SSID_MESSAGE) != readBytes) {
 			bFound = false;
@@ -211,6 +210,7 @@ void CApSelDialog::OnBnClickedSetapBtn()
 void CApSelDialog::OnBnClickedScanapBtn()
 {
 	// TODO: Add your control notification handler code here
+	_parent->ToScanWindow();
 }
 
 
