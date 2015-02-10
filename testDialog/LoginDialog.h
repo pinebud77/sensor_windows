@@ -42,5 +42,6 @@ public:
 	bool TryLogin(CString& username, CString& passwordStr);
 	afx_msg void OnIdcancel();
 	afx_msg void OnIdok();
-	afx_msg void OnEnChangePasswdConfirmEdit();
+	bool AddUser(CString& usernameStr, CString& passwordStr, CString& familyNameStr, CString& firstNameStr, CString& emailStr);
+	bool AddPhoneNumber(CString& usernameStr, CString& passwordStr, CString& phonenumberStr);
 };

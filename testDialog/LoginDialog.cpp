@@ -54,7 +54,6 @@ BEGIN_MESSAGE_MAP(CLoginDialog, CDialogEx)
 	ON_BN_CLICKED(IDC_REGISTER_BTN, &CLoginDialog::OnBnClickedRegisterBtn)
 	ON_COMMAND(IDCANCEL, &CLoginDialog::OnIdcancel)
 	ON_COMMAND(IDOK, &CLoginDialog::OnIdok)
-	ON_EN_CHANGE(IDC_PASSWD_CONFIRM_EDIT, &CLoginDialog::OnEnChangePasswdConfirmEdit)
 END_MESSAGE_MAP()
 
 
@@ -123,6 +122,80 @@ void CLoginDialog::OnBnClickedLoginBtn()
 void CLoginDialog::OnBnClickedRegisterBtn()
 {
 	// TODO: Add your control notification handler code here
+	CString usernameStr;
+	CString passwordStr;
+	CString passwordConfirmStr;
+	CString familyNameStr;
+	CString firstNameStr;
+	CString emailStr;
+	int i;
+
+	m_usernameEdit.GetWindowText(usernameStr);
+	m_passwordEdit.GetWindowText(passwordStr);
+	m_passwordConfirmEdit.GetWindowText(passwordConfirmStr);
+	m_familyNameEdit.GetWindowText(familyNameStr);
+	m_firstNameEdit.GetWindowText(firstNameStr);
+	m_mailEdit.GetWindowText(emailStr);
+
+	if (usernameStr.GetLength() == 0) {
+		MessageBox(_T("사용자 아이디를 입력하지 않았습니다."), _T("에러"), MB_ICONERROR | MB_OK);
+		return;
+	}
+	if (passwordStr.GetLength() == 0) {
+		MessageBox(_T("암호를 입력하지 않았습니다."), _T("에러"), MB_ICONERROR | MB_OK);
+		return;
+	}
+	if (passwordConfirmStr.GetLength() == 0) {
+		MessageBox(_T("암호확인을 입력하지 않았습니다."), _T("에러"), MB_ICONERROR | MB_OK);
+		return;
+	}
+	if (familyNameStr.GetLength() == 0) {
+		MessageBox(_T("성을 입력하지 않았습니다."), _T("에러"), MB_ICONERROR | MB_OK);
+		return;
+	}
+	if (firstNameStr.GetLength() == 0) {
+		MessageBox(_T("이름을 입력하지 않았습니다."), _T("에러"), MB_ICONERROR | MB_OK);
+		return;
+	}
+	if (emailStr.GetLength() == 0) {
+		MessageBox(_T("이메일 주소를 입력하지 않았습니다."), _T("에러"), MB_ICONERROR | MB_OK);
+		return;
+	}
+
+	if (passwordStr != passwordConfirmStr) {
+		MessageBox(_T("암호가 다릅니다."), _T("에러"), MB_ICONERROR | MB_OK);
+		return;
+	}
+
+	if (m_phoneList.GetCount() == 0) {
+		MessageBox(_T("전화번호를 하나이상 입력해 주십시오."), _T("에러"), MB_ICONERROR | MB_OK);
+		return;
+	}
+
+	bool result = AddUser(usernameStr,
+		passwordStr,
+		familyNameStr,
+		firstNameStr,
+		emailStr
+		);
+
+	if (!result) {
+		MessageBox(_T("사용자 등록이 실패했습니다."), _T("에러"), MB_ICONERROR | MB_OK);
+		return;
+	}
+
+	for (i = 0; i < m_phoneList.GetCount(); i++) {
+		CString phonenumberStr;
+		m_phoneList.GetText(i, phonenumberStr);
+		result = AddPhoneNumber(usernameStr, passwordStr, phonenumberStr);
+		if (!result) {
+			MessageBox(_T("전화번호 등록이 실패했습니다."), _T("에러"), MB_ICONERROR | MB_OK);
+			return;
+		}
+	}
+
+	m_bLoggedIn = true;
+	_parent->NextProcess(this);
 }
 
 
@@ -136,7 +209,7 @@ bool CLoginDialog::GetLoginHash(CString& usernameStr, CString& passwordStr, CStr
 	BYTE rgbHash[40];
 	CHAR rgbDigits[] = "0123456789abcdef";
 	CHAR utfBuffer[400];
-
+	
 	hashStr = _T("hello") + usernameStr + passwordStr + _T("application");
 
 	WideCharToMultiByte(CP_UTF8, 0, hashStr, -1, utfBuffer, 400, NULL, NULL);
@@ -186,19 +259,24 @@ bool CLoginDialog::TryLogin(CString& usernameStr, CString& passwordStr)
 	CString returnedData;
 	int retVal;
 	char return_buffer[500];
-	CString dataString;
 	char dataBuffer[400];
+	char buffer1[400], buffer2[400];
 	
 	GetLoginHash(usernameStr, passwordStr, hashResultStr);
 
-	dataString += _T("username=");
-	dataString += usernameStr;
-	dataString += _T("&password=");
-	dataString += passwordStr;
-	dataString += _T("&secure_key=");
-	dataString += hashResultStr;
+	WideCharToMultiByte(CP_UTF8, 0, usernameStr, -1, buffer1, 400, NULL, NULL);
+	encode_char_str(buffer1, buffer2);
+	sprintf_s(dataBuffer, "username=%s", buffer2);
 
-	WideCharToMultiByte(CP_UTF8, 0, dataString, -1, dataBuffer, 400, NULL, NULL);
+	WideCharToMultiByte(CP_UTF8, 0, passwordStr, -1, buffer1, 400, NULL, NULL);
+	encode_char_str(buffer1, buffer2);
+	sprintf_s(buffer1, "&password=%s", buffer2);
+	strcat_s(dataBuffer, buffer1);
+
+	WideCharToMultiByte(CP_UTF8, 0, hashResultStr, -1, buffer1, 400, NULL, NULL);
+	encode_char_str(buffer1, buffer2);
+	sprintf_s(buffer1, "&secure_key=%s", buffer2);
+	strcat_s(dataBuffer, buffer1);	
 
 	retVal = HttpCall(_T(SERVER_ADDRESS),
 		80,
@@ -208,7 +286,6 @@ bool CLoginDialog::TryLogin(CString& usernameStr, CString& passwordStr)
 		&MemFile,
 		pWndRet
 		);
-	dataString.ReleaseBuffer();
 	ULONGLONG DataLen = MemFile.GetLength();
 	MemFile.SeekToBegin();
 	if (DataLen < 500 - 1) {
@@ -243,12 +320,133 @@ void CLoginDialog::OnIdok()
 }
 
 
-void CLoginDialog::OnEnChangePasswdConfirmEdit()
+bool CLoginDialog::AddUser(CString& usernameStr, CString& passwordStr, CString& familyNameStr, CString& firstNameStr, CString& emailStr)
 {
-	// TODO:  If this is a RICHEDIT control, the control will not
-	// send this notification unless you override the CDialogEx::OnInitDialog()
-	// function and call CRichEditCtrl().SetEventMask()
-	// with the ENM_CHANGE flag ORed into the mask.
+	CWnd* pWndRet = GetDlgItem(IDC_LOGIN_BTN);
+	CString hashResultStr;
+	CMemFile MemFile;
+	CString returnedData;
+	int retVal;
+	char return_buffer[500];
+	char dataBuffer[1000];
+	char buffer1[400], buffer2[400];
 
-	// TODO:  Add your control notification handler code here
+	GetLoginHash(usernameStr, passwordStr, hashResultStr);
+
+	WideCharToMultiByte(CP_UTF8, 0, usernameStr, -1, buffer1, 400, NULL, NULL);
+	encode_char_str(buffer1, buffer2);
+	sprintf_s(dataBuffer, "username=%s", buffer2);
+
+	WideCharToMultiByte(CP_UTF8, 0, passwordStr, -1, buffer1, 400, NULL, NULL);
+	encode_char_str(buffer1, buffer2);
+	sprintf_s(buffer1, "&password=%s", buffer2);
+	strcat_s(dataBuffer, buffer1);
+
+	WideCharToMultiByte(CP_UTF8, 0, hashResultStr, -1, buffer1, 400, NULL, NULL);
+	encode_char_str(buffer1, buffer2);
+	sprintf_s(buffer1, "&secure_key=%s", buffer2);
+	strcat_s(dataBuffer, buffer1);
+
+	WideCharToMultiByte(CP_UTF8, 0, familyNameStr, -1, buffer1, 400, NULL, NULL);
+	encode_char_str(buffer1, buffer2);
+	sprintf_s(buffer1, "&family_name=%s", buffer2);
+	strcat_s(dataBuffer, buffer1);
+
+	WideCharToMultiByte(CP_UTF8, 0, firstNameStr, -1, buffer1, 400, NULL, NULL);
+	encode_char_str(buffer1, buffer2);
+	sprintf_s(buffer1, "&first_name=%s", buffer2);
+	strcat_s(dataBuffer, buffer1);
+
+	WideCharToMultiByte(CP_UTF8, 0, emailStr, -1, buffer1, 400, NULL, NULL);
+	encode_char_str(buffer1, buffer2);
+	sprintf_s(buffer1, "&email=%s", buffer2);
+	strcat_s(dataBuffer, buffer1);
+
+	retVal = HttpCall(_T(SERVER_ADDRESS),
+		80,
+		_T("/sensor/appregister/"),
+		_T(""),
+		dataBuffer,
+		&MemFile,
+		pWndRet
+		);
+	ULONGLONG DataLen = MemFile.GetLength();
+	MemFile.SeekToBegin();
+	if (DataLen < 500 - 1) {
+		MemFile.Read(return_buffer, (UINT)DataLen);
+		return_buffer[DataLen] = '\0';
+	}
+	else {
+		MemFile.Read(return_buffer, (UINT)500);
+		return_buffer[500 - 1] = '\0';
+	}
+
+	CString resultStr = CA2W(return_buffer);
+	returnedData.ReleaseBuffer();
+	if (resultStr == _T("+suck=")) {
+		return true;
+	}
+
+	return false;
+}
+
+
+bool CLoginDialog::AddPhoneNumber(CString& usernameStr, CString& passwordStr, CString& phonenumberStr)
+{
+	CWnd* pWndRet = GetDlgItem(IDC_LOGIN_BTN);
+	CString hashResultStr;
+	CMemFile MemFile;
+	CString returnedData;
+	int retVal;
+	char return_buffer[500];
+	char dataBuffer[1000];
+	char buffer1[400], buffer2[400];
+
+	GetLoginHash(usernameStr, passwordStr, hashResultStr);
+
+	WideCharToMultiByte(CP_UTF8, 0, usernameStr, -1, buffer1, 400, NULL, NULL);
+	encode_char_str(buffer1, buffer2);
+	sprintf_s(dataBuffer, "username=%s", buffer2);
+
+	WideCharToMultiByte(CP_UTF8, 0, passwordStr, -1, buffer1, 400, NULL, NULL);
+	encode_char_str(buffer1, buffer2);
+	sprintf_s(buffer1, "&password=%s", buffer2);
+	strcat_s(dataBuffer, buffer1);
+
+	WideCharToMultiByte(CP_UTF8, 0, hashResultStr, -1, buffer1, 400, NULL, NULL);
+	encode_char_str(buffer1, buffer2);
+	sprintf_s(buffer1, "&secure_key=%s", buffer2);
+	strcat_s(dataBuffer, buffer1);
+
+	WideCharToMultiByte(CP_UTF8, 0, phonenumberStr, -1, buffer1, 400, NULL, NULL);
+	encode_char_str(buffer1, buffer2);
+	sprintf_s(buffer1, "&phone_number=%s", buffer2);
+	strcat_s(dataBuffer, buffer1);
+
+	retVal = HttpCall(_T(SERVER_ADDRESS),
+		80,
+		_T("/sensor/appphone/"),
+		_T(""),
+		dataBuffer,
+		&MemFile,
+		pWndRet
+		);
+	ULONGLONG DataLen = MemFile.GetLength();
+	MemFile.SeekToBegin();
+	if (DataLen < 500 - 1) {
+		MemFile.Read(return_buffer, (UINT)DataLen);
+		return_buffer[DataLen] = '\0';
+	}
+	else {
+		MemFile.Read(return_buffer, (UINT)500);
+		return_buffer[500 - 1] = '\0';
+	}
+
+	CString resultStr = CA2W(return_buffer);
+	returnedData.ReleaseBuffer();
+	if (resultStr == _T("+suck=")) {
+		return true;
+	}
+
+	return false;
 }

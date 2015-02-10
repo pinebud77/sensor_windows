@@ -2,73 +2,78 @@
 #include "http.h"
 
 
-bool encode_char_str(const char * input, char* output)
+void encode_char_str(char * input, char * output)
 {
-	int i, max, oi;
-	unsigned short asc;
-	char c;
-	char buffer[10];
-	
-	max = strlen(input);
-	oi = 0;
-	for (i = 0; i < max; i++) {
-		c = input[i];
-		asc = c;
-		if (asc>47 && asc < 58) {
-			output[oi++] = c;
-			output[oi] = '\0';
-		} else if (asc>64 && asc < 91) {
-			output[oi++] = c;
-			output[oi] = '\0';
-		} else if (asc >96 && asc < 123) {
-			output[oi++] = c;
-			output[oi] = '\0';
-		} else if (asc == 32) {
-			output[oi++] = '+';
-			output[oi] = '\0';
-		} else {
-			sprintf_s(buffer, "%%%2x", asc);
-			int iv = buffer[1];
-			if (iv == 32) {
-				buffer[1] = '0';
-			}
-			strcat_s(output, 300, buffer);
-			oi += strlen(buffer);
-			output[oi] = '\0';
+	// RFC 1738  참조 
+	// 16진수로 봐서 00-1F 랑 7F 값은 %를 붙이고 헥사로 바꾼다 .
+	// 80-FF  그리고 아래와 같은 controlling character들 
+	//     { } | \ ^ ~    [ ] ` # ; / ? : @ = &
+	// 예를 들어서 스페이스 ( 빈칸 )은 
+	// Dec 값으로 32구 Hex값으로 20이니까
+	// 빈칸대신 %20 를 붙이는 식입니다
+
+	int opt_inx, ipt_inx;
+
+	for (ipt_inx = 0, opt_inx = 0; input[ipt_inx]; ipt_inx++, opt_inx++)
+	{
+		int char_val = input[ipt_inx];
+		if (char_val < 0) char_val += 256;
+		// 그리고 어레이를 참조하게 되면 그만큼 느리기때문에 char_val에 값을 넣습니다
+		// char를 int 로 바꾸는 과정에서 127이 넘는 값은 음수로 들어가기때문에
+		// 위와 같이 256을 더합니다
+
+
+		if (
+			char_val <= 0x1F ||
+			char_val == 0x7F ||
+			char_val >= 0x80 ||
+			char_val == ' ' ||
+			char_val == '{' ||
+			char_val == '}' ||
+			char_val == '[' ||
+			char_val == ']' ||
+			char_val == '|' ||
+			char_val == '\\' ||
+			char_val == '^' ||
+			char_val == '~' ||
+			char_val == '`' ||
+			char_val == '#' ||
+			char_val == ';' ||
+			char_val == '/' ||
+			char_val == '?' ||
+			char_val == '@' ||
+			char_val == '=' ||
+			char_val == '&')
+		{
+			output[opt_inx] = '%';
+
+			int UpperBit = char_val / 0x10;
+			// 16을 나눠서 상위바이트를 얻습니다.
+
+			if (UpperBit >= 0 && UpperBit <= 9)
+				output[++opt_inx] = UpperBit + '0';
+			else
+				output[++opt_inx] = UpperBit + 'A' - 10;
+			// 값을 보고 숫자인지 A~ E 인지 구분해보고 넣습니다.
+
+
+			// 16으로 나누면 하위 바이트가 나오겠죠..
+
+			int LowerBit = char_val % 0x10;
+			if (LowerBit >= 0 && LowerBit <= 9)
+				output[++opt_inx] = LowerBit + '0';
+			else
+				output[++opt_inx] = LowerBit + 'A' - 10;
 		}
+		else
+			output[opt_inx] = char_val;
+
 	}
 
-	return true;
+	output[opt_inx] = 0;
+
 }
 
-bool decode_char_str(const char* input, char* output) {
-	char buffer[10];
-	int i, max, oi;
-	unsigned short asc;
-	unsigned char c;
-
-	max = strlen(input);
-	oi = 0;
-	for (i = 0; i < max;) {
-		c = input[i];
-		asc = c;
-		if (asc == 37) {
-			strncpy_s(buffer, &input[i + 1], 2);
-			i += 3;
-			sscanf_s(buffer, "%2x", &asc);
-			output[oi++] = (unsigned char)asc;
-		} else if (asc == 43) {
-			output[oi++] = ' ';
-			i++;
-		} else {
-			output[oi++] = c;
-			i++;
-		}
-	}
-	output[oi] = '\0';
-
-	return true;
-}
 
 void decode_file(CFile* DataFile, CHttpFile* HttpFile)
 {

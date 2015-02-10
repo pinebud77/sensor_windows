@@ -37,8 +37,7 @@ protected:
 	CWnd* m_pStatusWnd;
 };
 
-bool encode_char_str(char * input, char * output);
-bool decode_char_str(char* input, char * output);
+void encode_char_str(char * input, char * output);
 void decode_file(CFile* DataFile, CHttpFile* HttpFile);
 int HttpCall(const TCHAR* ServerAddress,
 	int ServerPort,

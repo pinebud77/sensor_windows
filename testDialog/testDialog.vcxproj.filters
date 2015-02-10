@@ -51,6 +51,9 @@
     <ClInclude Include="ScanDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FinishDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="testDialog.cpp">
@@ -78,6 +81,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ScanDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FinishDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

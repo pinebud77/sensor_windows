@@ -10,6 +10,7 @@
 #include "UartDialog.h"
 #include "ApSelDialog.h"
 #include "ScanDialog.h"
+#include "FinishDialog.h"
 
 #include "Serial.h"
 
@@ -32,6 +33,7 @@ CtestDialogDlg::CtestDialogDlg(CWnd* pParent /*=NULL*/)
 	m_pSerial = NULL;
 	m_pApSelDlg = NULL;
 	m_pScanDlg = NULL;
+	m_pFinishDlg = NULL;
 }
 
 void CtestDialogDlg::DoDataExchange(CDataExchange* pDX)
@@ -77,6 +79,11 @@ BOOL CtestDialogDlg::OnInitDialog()
 	if (NULL == m_pScanDlg) {
 		m_pScanDlg = new CScanDialog(this, this);
 		m_pScanDlg->Create(CScanDialog::IDD, this);
+	}
+
+	if (NULL == m_pFinishDlg) {
+		m_pFinishDlg = new CFinishDialog(this, this);
+		m_pFinishDlg->Create(CFinishDialog::IDD, this);
 	}
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
@@ -126,6 +133,7 @@ CtestDialogDlg::~CtestDialogDlg()
 	delete m_pApSelDlg;
 	delete m_pSerial;
 	delete m_pScanDlg;
+	delete m_pFinishDlg;
 }
 
 void CtestDialogDlg::NextProcess(CDialogEx * pChild)
@@ -145,6 +153,17 @@ void CtestDialogDlg::NextProcess(CDialogEx * pChild)
 	else if (pChild == m_pApSelDlg) {
 		SetWindowText(_T("센서노드 정보 입력"));
 		m_pApSelDlg->ShowWindow(SW_HIDE);
+		m_pFinishDlg->ShowWindow(SW_SHOWNORMAL);
+		m_pFinishDlg->SetFocus();
+	}
+	else if (pChild == m_pScanDlg) {
+		SetWindowText(_T("센서노드 정보 입력"));
+		m_pScanDlg->ShowWindow(SW_HIDE);
+		m_pFinishDlg->ShowWindow(SW_SHOWNORMAL);
+		m_pFinishDlg->SetFocus();
+	}
+	else {
+
 	}
 }
 

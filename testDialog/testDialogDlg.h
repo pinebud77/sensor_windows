@@ -10,6 +10,7 @@ class CLoginDialog;
 class CUartDialog;
 class CApSelDialog;
 class CScanDialog;
+class CFinishDialog;
 
 class CSerial;
 
@@ -46,5 +47,6 @@ public:
 	CUartDialog * m_pUartDlg;
 	CApSelDialog *m_pApSelDlg;
 	CScanDialog * m_pScanDlg;
+	CFinishDialog * m_pFinishDlg;
 	void ToScanWindow();
 };

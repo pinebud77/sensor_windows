@@ -70,7 +70,7 @@ void CApSelDialog::OnIdok()
 	// TODO: Add your command handler code here
 }
 
-UINT ConnectMonitor(LPVOID pParam)
+static UINT ConnectMonitor(LPVOID pParam)
 {
 	CApSelDialog* pDlg = (CApSelDialog*)pParam;
 	char buffer[MAX_INIT_STRING_LEN];

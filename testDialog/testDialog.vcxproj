@@ -102,6 +102,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ApSelDialog.h" />
+    <ClInclude Include="FinishDialog.h" />
     <ClInclude Include="http.h" />
     <ClInclude Include="LoginDialog.h" />
     <ClInclude Include="Resource.h" />
@@ -115,6 +116,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ApSelDialog.cpp" />
+    <ClCompile Include="FinishDialog.cpp" />
     <ClCompile Include="http.cpp" />
     <ClCompile Include="LoginDialog.cpp" />
     <ClCompile Include="ScanDialog.cpp" />
