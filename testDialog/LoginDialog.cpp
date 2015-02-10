@@ -54,6 +54,7 @@ BEGIN_MESSAGE_MAP(CLoginDialog, CDialogEx)
 	ON_BN_CLICKED(IDC_REGISTER_BTN, &CLoginDialog::OnBnClickedRegisterBtn)
 	ON_COMMAND(IDCANCEL, &CLoginDialog::OnIdcancel)
 	ON_COMMAND(IDOK, &CLoginDialog::OnIdok)
+	ON_EN_CHANGE(IDC_PASSWD_CONFIRM_EDIT, &CLoginDialog::OnEnChangePasswdConfirmEdit)
 END_MESSAGE_MAP()
 
 
@@ -239,4 +240,15 @@ void CLoginDialog::OnIdcancel()
 void CLoginDialog::OnIdok()
 {
 	// TODO: Add your command handler code here
+}
+
+
+void CLoginDialog::OnEnChangePasswdConfirmEdit()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialogEx::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
 }

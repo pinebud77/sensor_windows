@@ -8,6 +8,7 @@
 #include "afxdialogex.h"
 #include "LoginDialog.h"
 #include "UartDialog.h"
+#include "ApSelDialog.h"
 #include "Serial.h"
 
 #ifdef _DEBUG
@@ -27,6 +28,7 @@ CtestDialogDlg::CtestDialogDlg(CWnd* pParent /*=NULL*/)
 	m_pLoginDlg = NULL;
 	m_pUartDlg = NULL;
 	m_pSerial = NULL;
+	m_pApSelDlg = NULL;
 }
 
 void CtestDialogDlg::DoDataExchange(CDataExchange* pDX)
@@ -62,6 +64,11 @@ BOOL CtestDialogDlg::OnInitDialog()
 	if (NULL == m_pUartDlg) {
 		m_pUartDlg = new CUartDialog(this, this);
 		m_pUartDlg->Create(CUartDialog::IDD, this);
+	}
+
+	if (NULL == m_pApSelDlg) {
+		m_pApSelDlg = new CApSelDialog(this, this);
+		m_pApSelDlg->Create(CApSelDialog::IDD, this);
 	}
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
@@ -108,6 +115,7 @@ CtestDialogDlg::~CtestDialogDlg()
 {
 	delete m_pLoginDlg;
 	delete m_pUartDlg;
+	delete m_pApSelDlg;
 	delete m_pSerial;
 }
 
@@ -122,5 +130,11 @@ void CtestDialogDlg::NextProcess(CDialogEx * pChild)
 	else if (pChild == m_pUartDlg) {
 		SetWindowText(_T("AP 정보 입력"));
 		m_pUartDlg->ShowWindow(SW_HIDE);
+		m_pApSelDlg->ShowWindow(SW_SHOWNORMAL);
+		m_pApSelDlg->SetFocus();
+	}
+	else if (pChild == m_pApSelDlg) {
+		SetWindowText(_T("센서노드 정보 입력"));
+		m_pApSelDlg->ShowWindow(SW_HIDE);
 	}
 }

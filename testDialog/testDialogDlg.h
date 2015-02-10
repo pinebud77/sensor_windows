@@ -8,6 +8,7 @@
 
 class CLoginDialog;
 class CUartDialog;
+class CApSelDialog;
 class CSerial;
 
 // CtestDialogDlg 대화 상자
@@ -41,4 +42,5 @@ public:
 	CSerial* m_pSerial;
 	CLoginDialog *m_pLoginDlg;
 	CUartDialog * m_pUartDlg;
+	CApSelDialog *m_pApSelDlg;
 };

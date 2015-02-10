@@ -40,9 +40,9 @@ BOOL CSerial::Open( int nPort, int nBaud )
  	memset( &m_OverlappedWrite, 0, sizeof( OVERLAPPED ) );
 
 	COMMTIMEOUTS CommTimeOuts;
-	CommTimeOuts.ReadIntervalTimeout = 0xFFFFFFFF;
+	CommTimeOuts.ReadIntervalTimeout = 5000;
 	CommTimeOuts.ReadTotalTimeoutMultiplier = 0;
-	CommTimeOuts.ReadTotalTimeoutConstant = 0;
+	CommTimeOuts.ReadTotalTimeoutConstant = 5000;
 	CommTimeOuts.WriteTotalTimeoutMultiplier = 0;
 	CommTimeOuts.WriteTotalTimeoutConstant = 5000;
 	SetCommTimeouts( m_hIDComDev, &CommTimeOuts );
@@ -70,7 +70,9 @@ BOOL CSerial::Open( int nPort, int nBaud )
 		CloseHandle( m_hIDComDev );
 		return( FALSE );
 		}
+	EscapeCommFunction(m_hIDComDev, CLRDTR);
 	EscapeCommFunction(m_hIDComDev, SETDTR);
+	
 
 	m_bOpened = TRUE;
 
@@ -169,3 +171,25 @@ int CSerial::ReadData( void *buffer, int limit )
 
 }
 
+
+
+int CSerial::ReadBytesOrWait(char * buffer, int readSize, int waitMs)
+{
+	char * pPos;
+	int readBytes;
+	int j;
+		
+	pPos = buffer;
+	for (j = 0; j < waitMs; j++) {
+		readBytes = ReadData(pPos, readSize);
+		if (readBytes) {
+			pPos += readBytes;
+			readSize -= readBytes;
+			if (readSize == 0) {
+				break;
+			}
+		}
+		Sleep(1);
+	}
+	return (int) (pPos - buffer);
+}

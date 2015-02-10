@@ -36,6 +36,8 @@ protected:
 	OVERLAPPED m_OverlappedRead, m_OverlappedWrite;
 	BOOL m_bOpened;
 
+public:
+	int ReadBytesOrWait(char * buffer, int readSize, int waitMs);
 };
 
 #endif

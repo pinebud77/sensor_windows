@@ -42,4 +42,5 @@ public:
 	bool TryLogin(CString& username, CString& passwordStr);
 	afx_msg void OnIdcancel();
 	afx_msg void OnIdok();
+	afx_msg void OnEnChangePasswdConfirmEdit();
 };
