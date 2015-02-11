@@ -10,6 +10,7 @@
 
 #include "resource.h"		// 주 기호입니다.
 
+#define SERVER_ADDRESS "galvanic-cirrus-841.appspot.com"
 
 // CtestDialogApp:
 // 이 클래스의 구현에 대해서는 testDialog.cpp을 참조하십시오.

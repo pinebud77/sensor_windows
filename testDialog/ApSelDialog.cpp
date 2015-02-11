@@ -18,6 +18,9 @@
 #define CONNECTING_MESSAGE "connecting to AP.. \r\n"
 #define CONNECTED_MESSAGE "AP connected 1\r\n"
 #define CONNECTION_FAIL_MESSAGE "AP connected 1\r\n"
+#define WRITE_EEPROM_MESSAGE "Writing EEPROM\r\n"
+#define READ_EEPROM_MESSAGE "reading EEPROM..\r\n"
+#define MAC_MESSAGE "mac: 08-00-00-59-2d-26\r\n"
 #define MAX_INIT_STRING_LEN	300
 
 IMPLEMENT_DYNAMIC(CApSelDialog, CDialogEx)
@@ -75,8 +78,10 @@ static UINT ConnectMonitor(LPVOID pParam)
 	CApSelDialog* pDlg = (CApSelDialog*)pParam;
 	char buffer[MAX_INIT_STRING_LEN];
 	bool bConnected = true;
+	bool bMacReceived = false;
 	int readBytes;
 	CSerial * pSerial = pDlg->_parent->m_pSerial;
+	unsigned int mac[6];
 	
 	readBytes = pSerial->ReadBytesOrWait(buffer, strlen(CONNECTED_MESSAGE), 1000000);
 	if (readBytes != strlen(CONNECTED_MESSAGE)) {
@@ -87,6 +92,43 @@ static UINT ConnectMonitor(LPVOID pParam)
 	}
 
 	if (bConnected) {
+		readBytes = pSerial->ReadBytesOrWait(buffer, strlen(WRITE_EEPROM_MESSAGE), 1000000);
+		if (readBytes != strlen(WRITE_EEPROM_MESSAGE)) {
+			bConnected = false;
+		}
+		else if (strncmp(WRITE_EEPROM_MESSAGE, buffer, strlen(WRITE_EEPROM_MESSAGE))) {
+			bConnected = false;
+		}
+
+		readBytes = pSerial->ReadBytesOrWait(buffer, strlen(READ_EEPROM_MESSAGE), 1000000);
+		if (readBytes != strlen(READ_EEPROM_MESSAGE)) {
+			bConnected = false;
+		}
+		else if (strncmp(READ_EEPROM_MESSAGE, buffer, strlen(READ_EEPROM_MESSAGE))) {
+			bConnected = false;
+		}
+	}
+
+	readBytes = pSerial->ReadBytesOrWait(buffer, strlen(MAC_MESSAGE), 1000000);
+	if (readBytes != strlen(MAC_MESSAGE)) {
+		bConnected = false;
+		bMacReceived = false;
+	}
+	else {
+		bMacReceived = true;
+	}
+
+	if (!bConnected) {
+		pSerial->SendData("b", 1);
+	}
+
+	if (bMacReceived) {
+		buffer[readBytes] = '\0';
+		sscanf_s(buffer, "mac: %x-%x-%x-%x-%x-%x\r\n",
+			&mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]);
+
+		pDlg->_parent->m_strMac.Format(_T("%2.2x:%2.2x:%2.2x:%2.2x:%2.2x:%2.2x"),
+			mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 		pDlg->OnApConnect();
 	}
 	else {

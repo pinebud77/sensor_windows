@@ -14,8 +14,6 @@
 #include "testDialogDlg.h"
 
 
-#define SERVER_ADDRESS "galvanic-cirrus-841.appspot.com"
-
 // CLoginDialog dialog
 
 IMPLEMENT_DYNAMIC(CLoginDialog, CDialogEx)
@@ -113,6 +111,8 @@ void CLoginDialog::OnBnClickedLoginBtn()
 	m_loginPasswordEdit.GetWindowText(passwordStr);
 
 	if (TryLogin(usernameStr, passwordStr)) {
+		_parent->m_strUsername = usernameStr;
+		_parent->m_strPassword = passwordStr;
 		m_bLoggedIn = true;
 		_parent->NextProcess(this);
 	}
@@ -195,6 +195,8 @@ void CLoginDialog::OnBnClickedRegisterBtn()
 	}
 
 	m_bLoggedIn = true;
+	_parent->m_strUsername = usernameStr;
+	_parent->m_strPassword = passwordStr;
 	_parent->NextProcess(this);
 }
 
@@ -325,9 +327,9 @@ bool CLoginDialog::AddUser(CString& usernameStr, CString& passwordStr, CString& 
 	CWnd* pWndRet = GetDlgItem(IDC_LOGIN_BTN);
 	CString hashResultStr;
 	CMemFile MemFile;
-	CString returnedData;
-	int retVal;
 	char return_buffer[500];
+	CString returnedData;
+	int retVal;	
 	char dataBuffer[1000];
 	char buffer1[400], buffer2[400];
 

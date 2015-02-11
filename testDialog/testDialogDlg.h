@@ -49,4 +49,7 @@ public:
 	CScanDialog * m_pScanDlg;
 	CFinishDialog * m_pFinishDlg;
 	void ToScanWindow();
+	CString m_strMac;
+	CString m_strUsername;
+	CString m_strPassword;
 };

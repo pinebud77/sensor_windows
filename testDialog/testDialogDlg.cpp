@@ -25,6 +25,9 @@
 
 CtestDialogDlg::CtestDialogDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CtestDialogDlg::IDD, pParent)
+	, m_strMac(_T(""))
+	, m_strUsername(_T(""))
+	, m_strPassword(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
@@ -163,7 +166,7 @@ void CtestDialogDlg::NextProcess(CDialogEx * pChild)
 		m_pFinishDlg->SetFocus();
 	}
 	else {
-
+		EndDialog(0);
 	}
 }
 
