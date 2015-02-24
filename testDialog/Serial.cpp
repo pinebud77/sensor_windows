@@ -172,7 +172,6 @@ int CSerial::ReadData( void *buffer, int limit )
 }
 
 
-
 int CSerial::ReadBytesOrWait(char * buffer, int readSize, int waitMs)
 {
 	char * pPos;
@@ -191,5 +190,25 @@ int CSerial::ReadBytesOrWait(char * buffer, int readSize, int waitMs)
 		}
 		Sleep(1);
 	}
+	*pPos = 0;
 	return (int) (pPos - buffer);
+}
+
+
+void CSerial::SetTimeout(unsigned int nTimeout)
+{
+	m_nTimeout = nTimeout;
+}
+
+
+bool CSerial::Find(char * buffer)
+{
+	char read_buffer[400];
+
+	ReadBytesOrWait(read_buffer, strnlen_s(buffer, 400), m_nTimeout);
+
+	if (!strcmp(read_buffer, buffer))
+		return true;
+
+	return false;
 }

@@ -83,33 +83,10 @@ static UINT ConnectMonitor(LPVOID pParam)
 	CSerial * pSerial = pDlg->_parent->m_pSerial;
 	unsigned int mac[6];
 	
-	readBytes = pSerial->ReadBytesOrWait(buffer, strlen(CONNECTED_MESSAGE), 1000000);
-	if (readBytes != strlen(CONNECTED_MESSAGE)) {
-		bConnected = false;
-	}
-	else if (strncmp(CONNECTED_MESSAGE, buffer, strlen(CONNECTED_MESSAGE))) {
-		bConnected = false;
-	}
-
-	if (bConnected) {
-		readBytes = pSerial->ReadBytesOrWait(buffer, strlen(WRITE_EEPROM_MESSAGE), 1000000);
-		if (readBytes != strlen(WRITE_EEPROM_MESSAGE)) {
-			bConnected = false;
-		}
-		else if (strncmp(WRITE_EEPROM_MESSAGE, buffer, strlen(WRITE_EEPROM_MESSAGE))) {
-			bConnected = false;
-		}
-
-		readBytes = pSerial->ReadBytesOrWait(buffer, strlen(READ_EEPROM_MESSAGE), 1000000);
-		if (readBytes != strlen(READ_EEPROM_MESSAGE)) {
-			bConnected = false;
-		}
-		else if (strncmp(READ_EEPROM_MESSAGE, buffer, strlen(READ_EEPROM_MESSAGE))) {
-			bConnected = false;
-		}
-	}
-
-	readBytes = pSerial->ReadBytesOrWait(buffer, strlen(MAC_MESSAGE), 1000000);
+	pSerial->SetTimeout(1000000);
+	bConnected = pSerial->Find(CONNECTED_MESSAGE);
+	
+	readBytes = pSerial->ReadBytesOrWait(buffer, strlen(MAC_MESSAGE), 500);
 	if (readBytes != strlen(MAC_MESSAGE)) {
 		bConnected = false;
 		bMacReceived = false;
@@ -164,69 +141,41 @@ void CApSelDialog::OnBnClickedSetapBtn()
 
 	bFound = true;
 	do {
-		int readBytes = pSerial->ReadBytesOrWait(buffer, strlen(SET_OR_SCAN_MESSAGE), 1000);
-		if (strlen(SET_OR_SCAN_MESSAGE) != readBytes) {
-			bFound = false;
-			break;
-		}
-		else if (strncmp(SET_OR_SCAN_MESSAGE, buffer, strlen(SET_OR_SCAN_MESSAGE))) {
-			bFound = false;
-			break;
-		}
-
+		pSerial->SetTimeout(1000);
+		bFound = pSerial->Find(SET_OR_SCAN_MESSAGE);
+		if (!bFound) break;
+		
 		pSerial->SendData("a", 1);
 
-		readBytes = pSerial->ReadBytesOrWait(buffer, strlen(SSID_MESSAGE), 1000);
-		if (strlen(SSID_MESSAGE) != readBytes) {
-			bFound = false;
-			break;
-		}
-		else if (strncmp(SSID_MESSAGE, buffer, strlen(SSID_MESSAGE))) {
-			bFound = false;
-			break;
-		}
+		bFound = pSerial->Find(SSID_MESSAGE);
+		if (!bFound) break;
 
 		pSerial->SendData(apNameBuffer, strlen(apNameBuffer));
 		pSerial->SendData("\r\n", 2);
 
-		readBytes = pSerial->ReadBytesOrWait(buffer, strlen(SECURITY_MESSAGE), 1000);
-		if (strlen(SECURITY_MESSAGE) != readBytes) {
-			bFound = false;
-			break;
-		}
-		else if (strncmp(SECURITY_MESSAGE, buffer, strlen(SECURITY_MESSAGE))) {
-			bFound = false;
-			break;
-		}
+		bFound = pSerial->Find(SECURITY_MESSAGE);
+		if (!bFound) break;
 
 		char temp = '0' + m_SecurityCB.GetCurSel();
 		pSerial->SendData(&temp, 1);
 		pSerial->SendData("\r\n", 2);
 
 		if (m_SecurityCB.GetCurSel() != 0) {
-			readBytes = pSerial->ReadBytesOrWait(buffer, strlen(PASSWORD_MESSAGE), 1000);
-			if (strlen(PASSWORD_MESSAGE) != readBytes) {
-				bFound = false;
-				break;
-			}
-			else if (strncmp(PASSWORD_MESSAGE, buffer, strlen(PASSWORD_MESSAGE))) {
-				bFound = false;
-				break;
-			}
+			bFound = pSerial->Find(PASSWORD_MESSAGE);
+			if (!bFound) break;
 
 			pSerial->SendData(passwordBuffer, strlen(passwordBuffer));
 			pSerial->SendData("\r\n", 2);
 		}
 
-		readBytes = pSerial->ReadBytesOrWait(buffer, strlen(CONNECTING_MESSAGE), 1000);
-		if (strlen(CONNECTING_MESSAGE) != readBytes) {
-			bFound = false;
-			break;
-		}
-		else if (strncmp(CONNECTING_MESSAGE, buffer, strlen(CONNECTING_MESSAGE))) {
-			bFound = false;
-			break;
-		}
+		bFound = pSerial->Find(WRITE_EEPROM_MESSAGE);
+		if (!bFound) break;
+
+		bFound = pSerial->Find(READ_EEPROM_MESSAGE);
+		if (!bFound) break;
+
+		bFound = pSerial->Find(CONNECTING_MESSAGE);
+		if (!bFound) break;
 	} while (false);
 
 	if (!bFound) {

@@ -70,13 +70,8 @@ UINT UartFind(LPVOID pParam)
 
 	for (i = 1; i < 200; i++) {
 		if (pSerial->Open(i, 9600)) {
-			int readBytes = pSerial->ReadBytesOrWait(buffer, strlen(ARDUINO_INIT_STRING), 10000);
-			if (strlen(ARDUINO_INIT_STRING) != readBytes) {
-				bFound = false;
-			} else if (!strncmp(buffer, ARDUINO_INIT_STRING, strlen(ARDUINO_INIT_STRING))) {
-				bFound = true;
-				break;
-			}
+			pSerial->SetTimeout(10000);
+			bFound = pSerial->Find(ARDUINO_INIT_STRING);
 			if (bFound) {
 				break;
 			}

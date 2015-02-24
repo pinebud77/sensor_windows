@@ -127,68 +127,41 @@ void CScanDialog::OnBnClickedScanconnectBtn()
 
 	bFound = true;
 	do {
-		int readBytes = pSerial->ReadBytesOrWait(buffer, strlen(SET_OR_SCAN_MESSAGE), 1000);
-		if (strlen(SET_OR_SCAN_MESSAGE) != readBytes) {
-			bFound = false;
-			break;
-		}
-		else if (strncmp(SET_OR_SCAN_MESSAGE, buffer, strlen(SET_OR_SCAN_MESSAGE))) {
-			bFound = false;
-			break;
-		}
+		pSerial->SetTimeout(15000);
+		bFound = pSerial->Find(SET_OR_SCAN_MESSAGE);
+		if (!bFound) break;
 
 		pSerial->SendData("a", 1);
 
-		readBytes = pSerial->ReadBytesOrWait(buffer, strlen(SSID_MESSAGE), 1000);
-		if (strlen(SSID_MESSAGE) != readBytes) {
-			bFound = false;
-			break;
-		}
-		else if (strncmp(SSID_MESSAGE, buffer, strlen(SSID_MESSAGE))) {
-			bFound = false;
-			break;
-		}
+		pSerial->SetTimeout(1000);
+		bFound = pSerial->Find(SSID_MESSAGE);
+		if (!bFound) break;
 
 		pSerial->SendData(apNameBuffer, strlen(apNameBuffer));
 		pSerial->SendData("\r\n", 2);
 
-		readBytes = pSerial->ReadBytesOrWait(buffer, strlen(SECURITY_MESSAGE), 1000);
-		if (strlen(SECURITY_MESSAGE) != readBytes) {
-			bFound = false;
-			break;
-		}
-		else if (strncmp(SECURITY_MESSAGE, buffer, strlen(SECURITY_MESSAGE))) {
-			bFound = false;
-			break;
-		}
+		bFound = pSerial->Find(SECURITY_MESSAGE);
+		if (!bFound) break;
 
 		pSerial->SendData(securityBuffer, 1);
 		pSerial->SendData("\r\n", 2);
 
 		if (securityBuffer[0] != '0') {
-			readBytes = pSerial->ReadBytesOrWait(buffer, strlen(PASSWORD_MESSAGE), 1000);
-			if (strlen(PASSWORD_MESSAGE) != readBytes) {
-				bFound = false;
-				break;
-			}
-			else if (strncmp(PASSWORD_MESSAGE, buffer, strlen(PASSWORD_MESSAGE))) {
-				bFound = false;
-				break;
-			}
+			bFound = pSerial->Find(PASSWORD_MESSAGE);
+			if (!bFound) break;
 
 			pSerial->SendData(passwordBuffer, strlen(passwordBuffer));
 			pSerial->SendData("\r\n", 2);
 		}
 
-		readBytes = pSerial->ReadBytesOrWait(buffer, strlen(CONNECTING_MESSAGE), 1000);
-		if (strlen(CONNECTING_MESSAGE) != readBytes) {
-			bFound = false;
-			break;
-		}
-		else if (strncmp(CONNECTING_MESSAGE, buffer, strlen(CONNECTING_MESSAGE))) {
-			bFound = false;
-			break;
-		}
+		bFound = pSerial->Find(WRITE_EEPROM_MESSAGE);
+		if (!bFound) break;
+
+		bFound = pSerial->Find(READ_EEPROM_MESSAGE);
+		if (!bFound) break;
+
+		bFound = pSerial->Find(CONNECTING_MESSAGE);
+		if (!bFound) break;
 	} while (false);
 
 	if (!bFound) {
@@ -292,27 +265,15 @@ static UINT ScanWorker (LPVOID pParam)
 	CMemFile memFile;
 
 	do {
-		readBytes = pSerial->ReadBytesOrWait(buffer, strlen(SET_OR_SCAN_MESSAGE), 1000);
-		if (strlen(SET_OR_SCAN_MESSAGE) != readBytes) {
-			bFound = false;
-			break;
-		}
-		else if (strncmp(SET_OR_SCAN_MESSAGE, buffer, strlen(SET_OR_SCAN_MESSAGE))) {
-			bFound = false;
-			break;
-		}
+		pSerial->SetTimeout(1000);
+		bFound = pSerial->Find(SET_OR_SCAN_MESSAGE);
+		if (!bFound) break;
 
 		pSerial->SendData("s", 1);
 
-		readBytes = pSerial->ReadBytesOrWait(buffer, strlen(SCAN_FINISH_MESSAGE), 15000);
-		if (strlen(SCAN_FINISH_MESSAGE) != readBytes) {
-			bFound = false;
-			break;
-		}
-		else if (strncmp(SCAN_FINISH_MESSAGE, buffer, strlen(SCAN_FINISH_MESSAGE))) {
-			bFound = false;
-			break;
-		}
+		pSerial->SetTimeout(15000);
+		bFound = pSerial->Find(SCAN_FINISH_MESSAGE);
+		if (!bFound) break;
 
 		do {
 			readBytes = pSerial->ReadBytesOrWait(buffer, 1000, 1000);
@@ -334,10 +295,12 @@ static UINT ScanWorker (LPVOID pParam)
 					lineIndex = 0;
 				}
 				else if (valueIndex == 1) {
+					//rssi
 					rssi = atoi(lineBuffer);
 					lineIndex = 0;
 				}
 				else {
+					//security
 					security = atoi(lineBuffer);
 					pDlg->AddSsid(ssidBuffer, rssi, security);
 					lineIndex = 0;

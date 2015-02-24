@@ -29,15 +29,19 @@ public:
 
 	BOOL IsOpened( void ){ return( m_bOpened ); }
 
+	
 protected:
 	BOOL WriteCommByte( unsigned char );
 
 	HANDLE m_hIDComDev;
 	OVERLAPPED m_OverlappedRead, m_OverlappedWrite;
 	BOOL m_bOpened;
+	unsigned int m_nTimeout;
 
 public:
 	int ReadBytesOrWait(char * buffer, int readSize, int waitMs);
+	void SetTimeout(unsigned int nTimeout);
+	bool Find(char * buffer);
 };
 
 #endif
